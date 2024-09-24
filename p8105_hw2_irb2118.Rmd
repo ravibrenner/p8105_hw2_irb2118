@@ -93,11 +93,24 @@ subway_df <- subway_df |>
 ```
 
 #### How many distinct stations serve the A train? 
+```{r}
+subway_df |>
+  filter(route_name == "A") |>
+  distinct(line,station_name) |>
+  nrow()
+```
 
-
+60 distinct stations serve the A train.
 
 #### Of the stations that serve the A train, how many are ADA compliant?
+```{r}
+subway_df |>
+  filter(route_name == "A") |>
+  distinct(line,station_name,ada) |>
+  janitor::tabyl(ada)
+```
 
+17/60 stations that serve the A train, or 28.3%, are ADA compliant.
 
 
 ## Problem 2
