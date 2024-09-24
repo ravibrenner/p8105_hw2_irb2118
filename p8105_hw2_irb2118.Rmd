@@ -1,0 +1,28 @@
+---
+title: "P8105 - HW2"
+output: github_document
+date: "Due: 2024-10-02"
+---
+
+Author: Ravi Brenner (irb2118)
+
+# Introduction
+This Rmarkdown document is for P8105 - Data Science 1, homework 2.
+
+# Methods
+The data for this homework comes from the course website, but all files can be found in the `data/` folder. Additionally, we will be using packages from the `tidyverse`
+
+```{r, message = FALSE}
+library(tidyverse)
+```
+
+
+# Problems
+
+## Problem 1
+
+## Problem 2
+
+## Problem 3
+
+# Conclusion
