@@ -42,19 +42,49 @@ subway_df <-
   ) |>
   mutate(entry = case_match(entry,
                             "YES" ~ TRUE,
-                            "NO" ~ FALSE),
-         across(.cols = route8:route11,
-                as.character))
+                            "NO" ~ FALSE))
 ```
 
-This dataset contains data on each subway line and station (name and geographic location), and the routes that operate at the line and station (for example, some stops accomodate multiple trains on the same line, like the NQRW or the 123). There are additional variables indicating the entrance type, presence of vending machines, and ADA compliance.
+This dataset contains data on each entrance and exit for each subway line and station (name and geographic location), and the routes that operate at the line and station (for example, some stops accomodate multiple trains on the same line, like the NQRW or the 123). There are additional variables indicating the entrance type, presence of vending machines, and ADA compliance.
 
-So far, I imported the data using `read_csv`, cleaned up the column names using `janitor::clean_names`, selected the relevant columns using `select`, and transformed the `entry` column from character to logical. I also changed routes 8-11 to characters, since some subway lines are lettered rather than numbered. After these steps, there are `r nrow(subway_df)` rows and `r ncol(subway_df)` columns. 
+So far, I imported the data using `read_csv`, cleaned up the column names using `janitor::clean_names`, selected the relevant columns using `select`, and transformed the `entry` column from character to logical. After these steps, there are `r nrow(subway_df)` rows and `r ncol(subway_df)` columns. 
 
-As of right now, these data are not tidy, because the routes at each station are indicated as seperate variables, rather than as observations withing a "routes" variable. We can fix that using `pivot_longer`:
 
+
+#### How many distinct stations are there? 
 ```{r}
 subway_df |>
+  distinct(line,station_name) |>
+  nrow()
+```
+
+There are 465 distinct stations.
+
+#### How many stations are ADA compliant?
+```{r}
+subway_df |>
+  filter(ada == TRUE) |>
+  distinct(line,station_name) |>
+  nrow()
+```
+
+84 stations are ADA compliant.
+
+#### What proportion of station entrances / exits without vending allow entrance?
+```{r}
+subway_df |>
+  filter(vending == "NO") |>
+  janitor::tabyl(entry)
+```
+
+37.7% of station entrances without vending allow entrance.
+
+
+Now, I will reformat the data from wide to long, into proper tidy format:
+```{r}
+subway_df <- subway_df |>
+  mutate(across(.cols = route8:route11,
+                as.character)) |>
   pivot_longer(cols = route1:route11,
                names_to = "route_number",
                values_to = "route_name",
@@ -62,15 +92,11 @@ subway_df |>
   drop_na(route_name)
 ```
 
+#### How many distinct stations serve the A train? 
 
-Write a short paragraph about this dataset – explain briefly what variables the dataset contains, describe your data cleaning steps so far, and give the dimension (rows x columns) of the resulting dataset. Are these data tidy?
 
-Answer the following questions using these data:
 
-How many distinct stations are there? Note that stations are identified both by name and by line (e.g. 125th St 8th Avenue; 125st Broadway; 125st Lenox); the distinct function may be useful here.
-How many stations are ADA compliant?
-What proportion of station entrances / exits without vending allow entrance?
-Reformat data so that route number and route name are distinct variables. How many distinct stations serve the A train? Of the stations that serve the A train, how many are ADA compliant?
+#### Of the stations that serve the A train, how many are ADA compliant?
 
 
 
