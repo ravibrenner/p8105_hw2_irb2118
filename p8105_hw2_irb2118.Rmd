@@ -203,6 +203,27 @@ gbbo_df |>
 ```
  
 
-Import, clean, tidy, and organize the viewership data in viewers.csv. Show the first 10 rows of this dataset. What was the average viewership in Season 1? In Season 5?
+Now, I will look at the viewership data. After importing and cleaning the column names, I pivot the data from wide to long, and reorder and arrange the columns for easier viewing.
+```{r, message=FALSE}
+viewers_df <- read_csv("data/viewers.csv") |>
+  janitor::clean_names() |>
+  pivot_longer(cols = series_1:series_10,
+               names_to = "series",
+               values_to = "viewers",
+               names_prefix = "series_") |>
+  mutate(series = as.numeric(series)) |>
+  select(series,everything()) |>
+  arrange(series,episode)
+```
+
+Here are the first few rows of the dataset:
+```{r}
+viewers_df |>
+  head(n = 10) |>
+  knitr::kable()
+```
+
+The average viewership was `r viewers_df |> filter(series == 1) |> summarize(mean(viewers,na.rm = TRUE))` in season 1 and `r viewers_df |> filter(series == 5) |> summarize(mean(viewers,na.rm = TRUE))` in season 5 (excluding episodes with missing viewership data). Although no explicitly stated, these viewership numbers likely represent either some multiple of viewers (i.e., time 1,000,000), or some other TV rating scale that may take live and streaming viewership into account. In either case, the viewership in season 5 is much larger than that of season 1.
 
 # Conclusion
+This homeworks assignment showcased various techniques related to importing, cleaning, tidying, and manipulating data using R and Rmarkdown.
