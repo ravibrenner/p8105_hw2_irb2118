@@ -7,16 +7,17 @@ date: "Due: 2024-10-02"
 Author: Ravi Brenner (irb2118)
 
 # Introduction
+
 This Rmarkdown document is for P8105 - Data Science 1, homework 2.
 
 # Methods
+
 The data for this homework comes from the course website, but all files can be found in the `data/` folder. Additionally, we will be using packages from the `tidyverse` and `readxl`.
 
 ```{r, message = FALSE}
 library(tidyverse)
 library(readxl)
 ```
-
 
 # Problems
 
@@ -26,7 +27,7 @@ This problem is about the NYC subway system.
 
 First, we must read in the data, clean up the column names, and select and transform the columns that we need:
 
-```{r}
+```{r, message=FALSE}
 subway_df <-
   read_csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") |>
   janitor::clean_names() |>
@@ -48,12 +49,12 @@ subway_df <-
 
 This dataset contains data on each entrance and exit for each subway line and station (name and geographic location), and the routes that operate at the line and station (for example, some stops accomodate multiple trains on the same line, like the NQRW or the 123). There are additional variables indicating the entrance type, presence of vending machines, and ADA compliance.
 
-So far, I imported the data using `read_csv`, cleaned up the column names using `janitor::clean_names`, selected the relevant columns using `select`, and transformed the `entry` column from character to logical. After these steps, there are `r nrow(subway_df)` rows and `r ncol(subway_df)` columns. 
+So far, I imported the data using `read_csv`, cleaned up the column names using `janitor::clean_names`, selected the relevant columns using `select`, and transformed the `entry` column from character to logical. After these steps, there are `r nrow(subway_df)` rows and `r ncol(subway_df)` columns.
 
-There are `r subway_df |> distinct(line,station_name) |> nrow()` distinct stations. Of those, `r subway_df |> filter(ada == TRUE) |> distinct(line,station_name) |> nrow()` are ADA compliant. Of the station entrances/exits without vending, `r subway_df |> filter(vending == "NO") |> summarize(sum(entry)) |> pull()` out of `r subway_df |> filter(vending == "NO") |> nrow()` allow entrance, or `r subway_df |> filter(vending == "NO") |> summarize(100*sum(entry)/n()) |> pull() |> round(1)` percent. 
-
+There are `r subway_df |> distinct(line,station_name) |> nrow()` distinct stations. Of those, `r subway_df |> filter(ada == TRUE) |> distinct(line,station_name) |> nrow()` are ADA compliant. Of the station entrances/exits without vending, `r subway_df |> filter(vending == "NO") |> summarize(sum(entry)) |> pull()` out of `r subway_df |> filter(vending == "NO") |> nrow()` allow entrance, or `r subway_df |> filter(vending == "NO") |> summarize(100*sum(entry)/n()) |> pull() |> round(1)` percent.
 
 Now, I will reformat the data from wide to long, into proper tidy format:
+
 ```{r}
 subway_df <- subway_df |>
   mutate(across(.cols = route8:route11,
@@ -65,10 +66,7 @@ subway_df <- subway_df |>
   drop_na(route_name)
 ```
 
-#### How many distinct stations serve the A train? 
 There are `r subway_df |> filter(route_name == "A") |> distinct(line,station_name) |> nrow()` distinct stations that serve the A train. Of those, `r subway_df |> filter(route_name == "A") |> distinct(line,station_name,ada) |> summarize(sum(ada))` are ADA compliant.
-
-
 
 ## Problem 2
 
@@ -85,6 +83,7 @@ mr_trash_wheel <- read_excel("data/202309 Trash Wheel Collection Data.xlsx",
 ```
 
 And repeat the same process for Professor Trash Wheel and Gwynnda Trash Wheel:
+
 ```{r}
 prof_trash_wheel <- read_excel("data/202309 Trash Wheel Collection Data.xlsx",
                              sheet = "Professor Trash Wheel",
@@ -114,7 +113,8 @@ The total number of cigarette butts collected by Gwynnda in June, 2022 was `r tr
 ## Problem 3
 
 First, I will import the 3 datasets, and clean up the names in the process.
-```{r}
+
+```{r, message=FALSE}
 bakers_df <- read_csv("data/bakers.csv") |>
   janitor::clean_names() 
 
@@ -124,17 +124,20 @@ bakes_df <- read_csv("data/bakes.csv") |>
 results_df <- read_csv("data/results.csv",
                        skip = 2) 
 ```
+
 `results.csv` already has clean names, but I had to skip the first two rows which had descriptive data that wasn't part of the table.
 
-Using `view` and printing the datasets, they look generally complete. One initial problem I noticed is that the `baker` column in `bakes_df` and `results_df` using first name only, while the `bakers_df` using first and last name. 
+Using `view` and printing the datasets, they look generally complete. One initial problem I noticed is that the `baker` column in `bakes_df` and `results_df` uses first name only, while the `bakers_df` uses first and last name.
 
-Transforming that column in `bakers_df`
+Transforming that column in `bakers_df`:
+
 ```{r}
 bakers_df <- bakers_df |>
   mutate(baker = str_split_i(baker_name," ",1))
 ```
 
 Now I'll double check for completeness using `anti_join`, on `baker` and `series` (to ensure that people with same first name aren't matched).
+
 ```{r}
 anti_join(bakers_df, bakes_df, by = c("baker", "series"))
 anti_join(bakes_df, bakers_df, by = c("baker", "series"))
@@ -147,19 +150,27 @@ anti_join(results_df,bakes_df, by = c("baker","series"))
 ```
 
 Looking at these results, two things jump out:
-1. The baker named "Joanne" in series 2 is not matched to a baker in `bakers_df`. Instead there is a baker named "Jo" in `bakers_df`, who appears to be the same person.
-2. `bakes_df` does not contain any bakes from series 9 or 10, so all the bakers and results from those series are not present.
+
+1.  The baker named "Jo" in series 2 is not matched to a baker in `results_df`. Instead there is a baker named "Jo" in `results_df`, who appears to be the same person. In `bakes_df` their name is stylized as "Jo" with quotation marks, so those need to be fixed also.
+
+2.  `bakes_df` does not contain any bakes from series 9 or 10, so all the bakers and results from those series are not present.
 
 The first problem is fixable, the second is not; we will have to merge the data without the bakes from seasons 9 and 10.
 
 Now merging the data:
+
 ```{r}
 gbbo_df <- bakers_df |>
-  mutate(baker = case_when(series == 2 & baker == "Jo" ~ "Joanne",
-                           .default = baker)) |>
-  full_join(bakes_df, by = c("series", "baker")) |>
-  full_join(results_df, by = c("series", "baker", "episode")) |>
-  arrange(series, episode) |>
+  full_join(bakes_df |>
+              mutate(baker = case_when(series == 2 & baker == "\"Jo\"" ~ "Jo",
+                                       .default = baker)), 
+            by = c("series", "baker")) |>
+  full_join(
+    results_df |> 
+      mutate(baker = case_when(series == 2 & baker == "Joanne" ~ "Jo",
+                           .default = baker)) ,
+    by = c("series", "baker", "episode")) |>
+  arrange(series, episode, baker) |>
   select(series,
          episode,
          baker,      
@@ -170,18 +181,28 @@ gbbo_df <- bakers_df |>
          everything())
 ```
 
-Export to CSV
+Export to CSV:
+
 ```{r}
 write_csv(gbbo_df,"data/gbbo_data.csv")
 ```
 
-
-Describe your data cleaning process, including any questions you have or choices you made. Briefly discuss the final dataset.
+The final combined dataset has `r gbbo_df |> nrow()` rows and `r gbbo_df |> ncol()` columns. It is sorted by series, episode, and baker name, with results in the next column. There are many missing entries in bakes and results, but this is intentional, since as players are eliminated they do not return for future weeks, and there is no data to be populated.
 
 Create a reader-friendly table showing the star baker or winner of each episode in Seasons 5 through 10. Comment on this table – were there any predictable overall winners? Any surprises?
 
+Here is a table of star bakers and season winners by season and episode, from seasons 5-10. Looking at this table, there were some predictable winners and some surprises. Nancy was a bit of a surprise in season 5, winning only 1 star baker to Richard's 5. Nadiya went on a hot streak to win at the end of season 6. In season 7, Candice was quite consistent and won several star bakers on the way to victory, similar to Sophie in season 8. Rahul started strong with 2 star bakers in season 9, but went through a slump before winning the season. David was perhaps the biggest dark horse in season 10, not winning a single star baker until his overall victory in the final episode.
+```{r}
+gbbo_df |>
+  filter(series >= 5,
+         series <= 10,
+         result %in% c("WINNER","STAR BAKER")) |>
+  select(series,episode,baker,result) |>
+  arrange(series,episode) |>
+  knitr::kable()
+```
+ 
+
 Import, clean, tidy, and organize the viewership data in viewers.csv. Show the first 10 rows of this dataset. What was the average viewership in Season 1? In Season 5?
-
-
 
 # Conclusion
