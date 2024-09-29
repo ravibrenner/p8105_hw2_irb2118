@@ -50,35 +50,7 @@ This dataset contains data on each entrance and exit for each subway line and st
 
 So far, I imported the data using `read_csv`, cleaned up the column names using `janitor::clean_names`, selected the relevant columns using `select`, and transformed the `entry` column from character to logical. After these steps, there are `r nrow(subway_df)` rows and `r ncol(subway_df)` columns. 
 
-
-
-#### How many distinct stations are there? 
-```{r}
-subway_df |>
-  distinct(line,station_name) |>
-  nrow()
-```
-
-There are 465 distinct stations.
-
-#### How many stations are ADA compliant?
-```{r}
-subway_df |>
-  filter(ada == TRUE) |>
-  distinct(line,station_name) |>
-  nrow()
-```
-
-84 stations are ADA compliant.
-
-#### What proportion of station entrances / exits without vending allow entrance?
-```{r}
-subway_df |>
-  filter(vending == "NO") |>
-  janitor::tabyl(entry)
-```
-
-37.7% of station entrances without vending allow entrance.
+There are `r subway_df |> distinct(line,station_name) |> nrow()` distinct stations. Of those, `r subway_df |> filter(ada == TRUE) |> distinct(line,station_name) |> nrow()` are ADA compliant. Of the station entrances/exits without vending, `r subway_df |> filter(vending == "NO") |> summarize(sum(entry)) |> pull()` out of `r subway_df |> filter(vending == "NO") |> nrow()` allow entrance, or `r subway_df |> filter(vending == "NO") |> summarize(100*sum(entry)/n()) |> pull() |> round(1)` percent. 
 
 
 Now, I will reformat the data from wide to long, into proper tidy format:
@@ -94,24 +66,9 @@ subway_df <- subway_df |>
 ```
 
 #### How many distinct stations serve the A train? 
-```{r}
-subway_df |>
-  filter(route_name == "A") |>
-  distinct(line,station_name) |>
-  nrow()
-```
+There are `r subway_df |> filter(route_name == "A") |> distinct(line,station_name) |> nrow()` distinct stations that serve the A train. Of those, `r subway_df |> filter(route_name == "A") |> distinct(line,station_name,ada) |> summarize(sum(ada))` are ADA compliant.
 
-60 distinct stations serve the A train.
 
-#### Of the stations that serve the A train, how many are ADA compliant?
-```{r}
-subway_df |>
-  filter(route_name == "A") |>
-  distinct(line,station_name,ada) |>
-  janitor::tabyl(ada)
-```
-
-17/60 stations that serve the A train, or 28.3%, are ADA compliant.
 
 ## Problem 2
 
