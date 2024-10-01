@@ -189,8 +189,6 @@ write_csv(gbbo_df,"data/gbbo_data.csv")
 
 The final combined dataset has `r gbbo_df |> nrow()` rows and `r gbbo_df |> ncol()` columns. It is sorted by series, episode, and baker name, with results in the next column. There are many missing entries in bakes and results, but this is intentional, since as players are eliminated they do not return for future weeks, and there is no data to be populated.
 
-Create a reader-friendly table showing the star baker or winner of each episode in Seasons 5 through 10. Comment on this table – were there any predictable overall winners? Any surprises?
-
 Here is a table of star bakers and season winners by season and episode, from seasons 5-10. Looking at this table, there were some predictable winners and some surprises. Nancy was a bit of a surprise in season 5, winning only 1 star baker to Richard's 5. Nadiya went on a hot streak to win at the end of season 6. In season 7, Candice was quite consistent and won several star bakers on the way to victory, similar to Sophie in season 8. Rahul started strong with 2 star bakers in season 9, but went through a slump before winning the season. David was perhaps the biggest dark horse in season 10, not winning a single star baker until his overall victory in the final episode.
 ```{r}
 gbbo_df |>
