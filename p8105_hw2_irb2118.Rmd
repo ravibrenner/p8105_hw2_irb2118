@@ -73,7 +73,7 @@ There are `r subway_df |> filter(route_name == "A") |> distinct(line,station_nam
 First we have to read in and clean the data for Mr. Trash Wheel. Then we will follow a similar process for Professor Trash Wheel and Gwynnda, and eventually combine them all into one tidy data set. First, Mr. Trash Wheel:
 
 ```{r}
-mr_trash_wheel <- read_excel("data/202309 Trash Wheel Collection Data.xlsx",
+mr_trash_wheel <- read_excel("data/202409 Trash Wheel Collection Data.xlsx",
                              sheet = "Mr. Trash Wheel",
                              range = "A2:N586") |>
   janitor::clean_names() |>
@@ -85,13 +85,13 @@ mr_trash_wheel <- read_excel("data/202309 Trash Wheel Collection Data.xlsx",
 And repeat the same process for Professor Trash Wheel and Gwynnda Trash Wheel:
 
 ```{r}
-prof_trash_wheel <- read_excel("data/202309 Trash Wheel Collection Data.xlsx",
+prof_trash_wheel <- read_excel("data/202409 Trash Wheel Collection Data.xlsx",
                              sheet = "Professor Trash Wheel",
                              range = "A2:M108") |>
   janitor::clean_names() |>
   mutate(name = "prof_trash_wheel")
 
-gwyn_trash_wheel <- read_excel("data/202309 Trash Wheel Collection Data.xlsx",
+gwyn_trash_wheel <- read_excel("data/202409 Trash Wheel Collection Data.xlsx",
                              sheet = "Gwynnda Trash Wheel",
                              range = "A2:L157") |>
   janitor::clean_names() |>
@@ -104,7 +104,7 @@ Now, combining all the datasets:
 trash_wheels <- bind_rows(mr_trash_wheel,prof_trash_wheel,gwyn_trash_wheel)
 ```
 
-With these 3 trash wheel datasets combined, there are `r nrow(trash_wheels)` rows (`r nrow(mr_trash_wheel)` for Mr. Trash Wheel, `r nrow(prof_trash_wheel)` for Professor Trash Wheel, and `r nrow(gwyn_trash_wheel)` for Gwynnda Trash Wheel) and `r ncol(trash_wheels)` columns. Observations range from `r min(pull(trash_wheels, date))` to `r max(pull(trash_wheels,date))`. Inspecting the data carefully, that date from 1900 appears to be an error in the original source excel sheet, not an issue in the data import process, so it could be worth asking the original data producer what that date should be. It appears to be a date in January 2020, but it's unclear which day. The true earliest date in the dataset is `r trash_wheels |> filter(year == year(date)) |> pull(date) |> min()`.
+With these 3 trash wheel datasets combined, there are `r nrow(trash_wheels)` rows (`r nrow(mr_trash_wheel)` for Mr. Trash Wheel, `r nrow(prof_trash_wheel)` for Professor Trash Wheel, and `r nrow(gwyn_trash_wheel)` for Gwynnda Trash Wheel) and `r ncol(trash_wheels)` columns. Observations range from `r min(pull(trash_wheels, date))` to `r max(pull(trash_wheels,date))`. 
 
 The total weight of trash collected by Professor Trash wheel was `r trash_wheels |> filter(name == "prof_trash_wheel") |> pull(weight_tons) |> sum()` tons over a period from `r min(pull(prof_trash_wheel, date))` to `r max(pull(prof_trash_wheel,date))`.
 
